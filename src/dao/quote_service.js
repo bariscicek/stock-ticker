@@ -33,31 +33,39 @@ class QuoteServiceDAO {
         body
       });
 
-      if (request.status === 404) {
-        const e = new Error();
-        e.name = 'SymbolNotFound';
-        throw e;
-      }
-      else if (request.status === 403) {
-        const e = new Error();
-        e.name = 'UnauthorizedError';
-        throw e;
-      }
-      else if (request.status === 422) {
-        const e = new Error();
-        e.name = 'UnprocessableRequest';
-        throw e;
-      }
-      else if (request.status !== 200) {
-        const errorText = await request.text();
-        const e = new Error(errorText);
-        throw e;
-      }
+      await this.handleErrors(request);
 
       return request.json();
     }
     catch (err) {
       throw err;
+    }
+  }
+
+  async handleErrors (request) {
+    if (!request || !request.status) {
+      throw new Error('Invalid request');
+    }
+
+    if (request.status === 404) {
+      const e = new Error();
+      e.name = 'SymbolNotFound';
+      throw e;
+    }
+    else if (request.status === 403) {
+      const e = new Error();
+      e.name = 'UnauthorizedError';
+      throw e;
+    }
+    else if (request.status === 422) {
+      const e = new Error();
+      e.name = 'UnprocessableRequest';
+      throw e;
+    }
+    else if (request.status !== 200) {
+      const errorText = await request.text();
+      const e = new Error(errorText);
+      throw e;
     }
   }
 
